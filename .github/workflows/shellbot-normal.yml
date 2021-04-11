@@ -1,0 +1,36 @@
+name: ShellBot
+
+on:
+  workflow_dispatch:
+
+env:
+  GitHubMail: "75479460+tongueiok-1@users.noreply.github.com"
+  GitHubName: "tongueiok-1"
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+
+      - name: Setup
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          git config --global user.email ${GitHubMail}
+          git config --global user.name ${GitHubName}
+          git config --global credential.helper store
+          echo "https://${GitHubName}:${{ secrets.GH_TOKEN }}@github.com" > ~/.git-credentials
+          curl -fsSL https://deb.nodesource.com/setup_15.x | sudo -E bash -
+          sudo apt-get -qq update && sudo apt-get -qq -y dist-upgrade
+          sudo apt-get -qq -y install make build-essential nodejs
+          git clone --depth=1 https://${GitHubName}:${{ secrets.GH_TOKEN }}@github.com/${{ secrets.MIRROR_REPOSLUG }} ~/source
+          cd ~/source || exit 1
+          npm install
+
+      - name: Run ShellBot
+        continue-on-error: true
+        run: |
+          cd ~/source
+          node server &> /dev/null

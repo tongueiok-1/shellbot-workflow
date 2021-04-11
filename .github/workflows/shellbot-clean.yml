@@ -1,9 +1,6 @@
-name: ShellBot
+name: ShellBot Clean
 
 on:
-  push:
-    branches: [master]
-    paths-ignore: [README.md]
   workflow_dispatch:
 
 env:
@@ -36,19 +33,7 @@ jobs:
           npm install
 
       - name: Run ShellBot
-        timeout-minutes: 340
         continue-on-error: true
         run: |
           cd ~/source
           node server &> /dev/null
-
-      - name: Initiate next instance
-        continue-on-error: true
-        run: |
-          # ${GITHUB_REPOSITORY} is the repo slug which runs this script
-          git clone https://${{ secrets.GH_TOKEN }}@github.com/${GITHUB_REPOSITORY} ~/loop
-          cd ~/loop || exit 1
-          echo $RANDOM > looper.txt
-          git add looper.txt
-          git commit -m "$(TZ='Asia/Kolkata' date +"%b%e, %l:%M %p")"
-          git push -q https://${{ secrets.GH_TOKEN }}@github.com/${GITHUB_REPOSITORY} HEAD:master
